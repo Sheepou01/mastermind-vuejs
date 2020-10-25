@@ -62,6 +62,19 @@ export default {
     }
   },
   methods: {
+    createNewCombination () {
+      // first we reset the secret combination on case we already have one
+      this.secretCombination = []
+
+      while (this.secretCombination.length < this.settings.nbPawns) {
+        const color = this.colors[Math.floor(Math.random() * this.nbColors)]
+        const item = {
+          position: this.secretCombination.length + 1,
+          color: color
+        }
+        this.secretCombination.push(item)
+      }
+    },
     addToProp (color) {
       if (this.propositionPawns.length === this.nbPawns) {
         alert('Nombre maximal atteint.')
@@ -98,6 +111,11 @@ export default {
         }
       })
 
+      if (wellPlacedColors === this.nbPawns) {
+        this.resetGame()
+        alert('Bravo ! Vous avez gagné !')
+        return
+      }
       goodColors -= wellPlacedColors
       alert('Il ya ' + wellPlacedColors + ' pions bien placé(s) et ' + goodColors + ' couleurs correcte(s).')
       this.saveProp(this.propositionPawns, wellPlacedColors, goodColors)
@@ -112,14 +130,34 @@ export default {
         }
       }
       this.tries.push(tryResult)
+      if (this.nbTries === this.limitTries) {
+        this.resetGame()
+        alert('Vous avez perdu :(')
+      }
     },
     checkKey (e) {
-      console.log(e.key)
-      // TODO
+      // matching keys with colors
+      const keyColors = {
+        v: 'green',
+        b: 'blue',
+        j: 'yellow',
+        r: 'red',
+        m: 'purple',
+        o: 'orange'
+      }
+
+      if (keyColors[e.key] !== undefined && this.colors.includes(keyColors[e.key])) {
+        this.addToProp(keyColors[e.key])
+      }
+    },
+    resetGame () {
+      this.tries = []
+      this.createNewCombination()
+      this.propositionPawns = []
     }
   },
   created () {
-    // first we add a listerer on the keyboard to enable play with it
+    // first we add a listener on the keyboard to enable play with it
     window.addEventListener('keypress', this.checkKey)
 
     // then we set variables from the settings
@@ -127,15 +165,8 @@ export default {
     this.nbColors = this.settings.nbColors
     this.nbPawns = parseInt(this.settings.nbPawns)
 
-    // generating the secret combination the player has to find
-    while (this.secretCombination.length < this.settings.nbPawns) {
-      const color = this.colors[Math.floor(Math.random() * this.nbColors)]
-      const item = {
-        position: this.secretCombination.length + 1,
-        color: color
-      }
-      this.secretCombination.push(item)
-    }
+    // we call the function that creates the secret combination
+    this.createNewCombination()
   }
 }
 </script>
